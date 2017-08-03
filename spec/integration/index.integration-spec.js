@@ -40,6 +40,8 @@ describe('[integration] sagui', function () {
   const projectContentWithPrettierErrorsInSaguiConfig = path.join(__dirname, '../fixtures/project-content-with-prettier-errors-in-sagui-config')
   const projectContentCustomPrettierOptionsInEslintrc = path.join(__dirname, '../fixtures/project-content-with-custom-prettier-options-in-eslintrc')
   const projectContentWithDynamicImports = path.join(__dirname, '../fixtures/project-content-with-dynamic-import')
+  const projectContentWithInvalidImports = path.join(__dirname, '../fixtures/project-content-with-invalid-import')
+
   let projectPath, projectSrcPath
 
   beforeEach(function () {
@@ -367,6 +369,17 @@ npm-debug.log`)
         fs.copySync(projectContentWithDynamicImports, projectPath, { overwrite: true })
 
         await sagui({ projectPath, action: actions.BUILD })
+      })
+    })
+
+    describe('when there are invalid imports', () => {
+      it('should not hang the test runner', async () => {
+        fs.copySync(projectContentWithInvalidImports, projectPath, { overwrite: true })
+        await sagui({ projectPath, action: actions.TEST_UNIT })
+          .then(
+            () => { throw new Error('It should have failed') },
+            (error) => expect(error).to.eql(1)
+          )
       })
     })
   })
